@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import { User } from "../models/user.model.js";
-import uploadOnCloudinary from "../utils/cloudinary.js";
+import {uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import {ApiResponse} from "../utils/ApiResponse.js"
 // import jwt from JsonWebTokenError
 import jwt  from "jsonwebtoken";
@@ -70,12 +70,14 @@ const registerUser= asyncHandler(async (req,res)=>{
     if(existedUser){
         throw new ApiError(409,"User is already existed")
     }
-    console.log("working")
+    // console.log("working")
     //check for images:avatar
+    console.log(req.files,"Files log");
     const avatarLocalFilePath=req.files?.avatar[0]?.path;
 
     let coverImageLocalFilePath;
-    console.log(req.files);
+    // console.log(req.files,"Files log");
+    
     if(req.files.coverImage&&Array.isArray(req.files.coverImage)&&req.files.coverImage.length>0)
    coverImageLocalFilePath =req.files?.coverImage[0]?.path
     if(!avatarLocalFilePath){
@@ -100,7 +102,10 @@ const registerUser= asyncHandler(async (req,res)=>{
     email,
     password,
     avatar:avatar.url,
+    avatarPublicId:avatar.public_id,
     coverImage:coverImage?.url||"",
+    coverImagePublicId:coverImage?.public_id||"",
+
 
 
  })
@@ -217,13 +222,24 @@ const updateAvatar=asyncHandler (async (req,res)=>{
     if(!avatarLocalFilePath)throw new ApiError(400,"No avatar is uploaded");
     const avatar=await uploadOnCloudinary(avatarLocalFilePath);
     if(!avatar) throw new ApiError(500,"Could not upload the avatar");
-    
-    const user=await User.findByIdAndUpdate(req.user._id,{
+    const user = await User.findById(req.user._id);
+    const oldPublicId=user.avatarPublicId;
+    // user.avatarPublicId=avatar.public_id;
+    // user.avatar=avatar.url;
+    // const newUser=await user.save({validateBeforeSave:false});
+    const newUser=await User.findByIdAndUpdate(req.user._id,{
         $set:{
-            avatar:avatar.url
+            avatar:avatar.url,
+            avatarPublicId:avatar.public_id
         }
     },{new :true}).select("-password")
-    return res.status(200).json(new ApiResponse(200,user))
+    if(!newUser) {
+        throw new ApiError("500","could not save new avatar")
+
+    }
+    await deleteFromCloudinary(oldPublicId);
+    console.log(newUser);
+    return res.status(200).json(new ApiResponse(200,newUser))
 });
 const updateCoverImage=asyncHandler (async (req,res)=>{
     const coverImageLocalFilePath=req.file?.path;
@@ -231,13 +247,17 @@ const updateCoverImage=asyncHandler (async (req,res)=>{
     if(!coverImageLocalFilePath)throw new ApiError(400,"No coverImage is uploaded");
     const coverImage=await uploadOnCloudinary(coverImageLocalFilePath);
     if(!coverImage) throw new ApiError(500,"Could not upload the coverImage");
-    
-    const user=await User.findByIdAndUpdate(req.user._id,{
+    const user=await User.findById(req.user._id);
+    const oldPublicId=user.coverImagePublicId;
+    const newUser=await User.findByIdAndUpdate(req.user._id,{
         $set:{
-            coverImage:coverImage.url
+            coverImage:coverImage.url,
+            coverImagePublicId:coverImage.public_id
         }
     },{new :true}).select("-password")
-    return res.status(200).json(new ApiResponse(200,user))
+    if(!user)throw new ApiError(500, "Something went wrong while saving image reference in Database")
+        
+    return res.status(200).json(new ApiResponse(200,newUser))
 })
 const getUserChannelProfile=asyncHandler(async (req,res)=>{
     const {username}=req.params;
@@ -333,7 +353,8 @@ const getWatchHistory= asyncHandler(async(req,res)=>{
                                 $project:{
                                     fullName:1,
                                     userName:1,
-                                    avatar:1
+                                    avatar:1,
+                                
                                 }
                             }],
 

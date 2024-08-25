@@ -30,9 +30,16 @@ const userSchema=new mongoose.Schema({
         required:true,
         
     },
+    avatarPublicId:{
+        type:String,
+        required:true,
+    },
     coverImage:{
         type:String, //cloudinary url
 
+    },
+    coverImagePublicId:{
+        type:String,
     },
     watchHistory:[{
         type:mongoose.Schema.Types.ObjectId,
