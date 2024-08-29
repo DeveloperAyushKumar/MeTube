@@ -6,7 +6,16 @@ const videoSchema=new mongoose.Schema({
         type:String, //cloudinary url
         required:true
     },
+    thumbnailPublicId:{
+        type:String,
+        required:true,
+    },
+
     videoFile:{
+        type:String, //cloudinary url
+        requried:true
+    },
+    videoFilePublicId:{
         type:String, //cloudinary url
         requried:true
     },
