@@ -260,7 +260,7 @@ const updateCoverImage=asyncHandler (async (req,res)=>{
     return res.status(200).json(new ApiResponse(200,newUser))
 })
 const getUserChannelProfile=asyncHandler(async (req,res)=>{
-    const {username}=req.params;
+    const {username}=req.user.username;
     if(!username?.trim()){
         throw new ApiError(400,"username is missing ");
 
@@ -274,7 +274,7 @@ const getUserChannelProfile=asyncHandler(async (req,res)=>{
     },
     {
         $lookup:{
-            from:"subscription",
+            from:"subscriptions",
             localField:"_id",
             foreignField:"channel",
             as:"subscribers"
