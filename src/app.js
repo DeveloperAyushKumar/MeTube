@@ -17,4 +17,11 @@ app.use("/users",userRouter)
 
 import videoRouter from "./routes/video.router.js"
 app.use("/video",videoRouter)
+
+import subscriptionRouter from "./routes/subscription.route.js"
+app.use('/subscription',subscriptionRouter);
+
+import tweetRouter from "./routes/tweet.router.js"
+app.use("/tweet",tweetRouter)
+
 export {app}
