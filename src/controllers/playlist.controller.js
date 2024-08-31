@@ -28,7 +28,7 @@ playlist.updateOne({$push:{videos:videoId}});
  
 })
 
-const getUserPlaylists=asyncHandler(async (req,res)=>{
+const getChanelPlaylists=asyncHandler(async (req,res)=>{
     const userId=req.query.userId;
     if(!userId)throw new ApiError(400,"userId is missing")
     const playlists=await PlayList.find({owner:userId});
@@ -98,7 +98,7 @@ const updatePlaylist=asyncHandler(async (req,res)=>{
 })
 export {
     createPlaylist,
-    getUserPlaylists,
+    getChanelPlaylists,
     getPlaylistById,
     addVideoToPlaylist,
     removeVideoFromPlaylist,

@@ -24,4 +24,7 @@ app.use('/subscription',subscriptionRouter);
 import tweetRouter from "./routes/tweet.router.js"
 app.use("/tweet",tweetRouter)
 
+import playlistRouter from "./routes/playlist.route.js"
+app.use("/playlist",playlistRouter)
+
 export {app}
